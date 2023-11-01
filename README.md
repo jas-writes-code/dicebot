@@ -1,0 +1,2 @@
+# dicebot
+Rolls dice.
