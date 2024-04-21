@@ -22,27 +22,31 @@ async def on_ready():
 @client.event
 async def on_message(message):
     pattern = r"^!(\d*)d(\d+)$"
-    match = re.match(pattern, message)
+    content = message.content
+    match = re.match(pattern, content)
     if match:
+        size = int(match.group(2))
         if match.group(1):
             rounds = int(match.group(1))
-            await multiDice(match.group(2), rounds, message)
+            await multiDice(size, rounds, message)
         else:
-            await singleDice(match.group(2), message)
-    else:
-        print("Invalid command or extra text in the message")
+            await singleDice(size, message)
 
 async def singleDice(size, message):
     user = message.author.id
     result = random.randint(1, size)
     await message.channel.send(f"<@{user}>, you rolled a **{result}**.")
+    print(f"A user rolled a {result} using a d{size}")
 
 async def multiDice(size, rounds, message):
-    user = message.author.id
-    count = 0
-    rolls = []
-    while count < rounds:
-        result = random.randint(0, size)
-        rolls.append(result)
-        count += 1
-    await message.channel.send(f"<@{user}>, your rolls are **{', '.join(map(str, result))}**.")
+    if rounds * len(str(size)) <= 1500:
+        user = message.author.id
+        rolls = []
+        for x in range(rounds):
+            result = random.randint(1, size)
+            rolls.append(result)
+        await message.channel.send(f"<@{user}>, your rolls are **{', '.join(map(str, rolls))}**.")
+    else:
+        await message.channel.send("That's too much, and would probably break discord. Sorry!")
+
+client.run(str(key))
