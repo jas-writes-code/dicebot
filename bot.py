@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 
-import math
 from discord import *
 import re
 import json
 import random
 
-client = discord.Client(intents=discord.Intents.all())
+client = Client(intents=Intents.all())
 
-config = json.load(open('settings.json'))
+config = json.load(open('token.json'))
 
 key = config["key"]
 
@@ -27,11 +26,9 @@ async def on_message(message):
     if match:
         if match.group(1):
             rounds = int(match.group(1))
-            multiDice(match.group(2), rounds, message)
+            await multiDice(match.group(2), rounds, message)
         else:
-            oneRoundRoll(match.group(2), message)
-        size = int(match.group(2))
-        roll = random.randint(1,size)
+            await singleDice(match.group(2), message)
     else:
         print("Invalid command or extra text in the message")
 
