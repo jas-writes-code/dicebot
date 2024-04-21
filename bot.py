@@ -3,17 +3,14 @@
 import math
 from discord import *
 import re
-import yaml
+import json
 import random
 
 client = discord.Client(intents=discord.Intents.all())
 
-with open('config.yml', 'r') as config_file:
-    config = yaml.safe_load(config_file)
+config = json.load(open('settings.json'))
 
 key = config["key"]
-server = config["server"]
-role = config["role"]
 
 @client.event
 async def on_ready():
@@ -25,22 +22,30 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    pattern = r"^!(\d*)x(\d+)$"
+    pattern = r"^!(\d*)d(\d+)$"
     match = re.match(pattern, message)
     if match:
         if match.group(1):
             rounds = int(match.group(1))
-            total = 0
-            for i in rounds:
-                total = 
+            multiDice(match.group(2), rounds, message)
         else:
-            oneRoundRoll
+            oneRoundRoll(match.group(2), message)
         size = int(match.group(2))
         roll = random.randint(1,size)
     else:
         print("Invalid command or extra text in the message")
 
-async def oneRoundRoll(size):
+async def singleDice(size, message):
+    user = message.author.id
+    result = random.randint(1, size)
+    await message.channel.send(f"<@{user}>, you rolled a **{result}**.")
 
-async def multiRoundRoll(size, rounds):
-    
+async def multiDice(size, rounds, message):
+    user = message.author.id
+    count = 0
+    rolls = []
+    while count < rounds:
+        result = random.randint(0, size)
+        rolls.append(result)
+        count += 1
+    await message.channel.send(f"<@{user}>, your rolls are **{', '.join(map(str, result))}**.")
