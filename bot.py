@@ -26,6 +26,9 @@ async def on_message(message):
     match = re.match(pattern, content)
     if match:
         size = int(match.group(2))
+        if size == 1:
+            await message.channel.send("You rolled a 1. What did you expect?")
+            return
         if match.group(1) and int(match.group(1)) > 1:
             rounds = int(match.group(1))
             await multiDice(size, rounds, message)
