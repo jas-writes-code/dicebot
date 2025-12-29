@@ -66,7 +66,11 @@ async def setImages(message, args):
                 config['characters'][uid]['images'] = []
                 return
             if len(message.attachments) == 0:
-                await message.reply(f"*Error:* No images found. Attach images to your message to include them in {character['name']}'s profile.")
+                content = f"No new images added. Displaying existing images for {character['name']}:"
+                for element in character["images"]:
+                    content += element
+                    content += "\n"
+                await message.channel.send(content)
                 return
             for element in message.attachments:
                 config['characters'][uid]['images'].append(element.url)
@@ -151,10 +155,6 @@ async def about(message, args):
             for element in sends:
                 await message.channel.send(element)
         content = ""
-        for element in character["images"]:
-            content += element
-            content += "\n"
-        await message.channel.send(content)
 
 async def setAlias(message, args):
     global character
