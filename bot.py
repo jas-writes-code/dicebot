@@ -64,9 +64,12 @@ async def setImages(message, args):
         if message.author.id == int(character["owner"]) or message.author.id == client.user.id:
             if len(args) == 2 and args[1] == "remove":
                 config['characters'][uid]['images'] = []
+                with open("config.json", "w") as f:
+                    json.dump(config, f, indent=4)
+                await message.reply(f"Removed {character['name']}'s images.")
                 return
             if len(message.attachments) == 0:
-                content = f"No new images added. Displaying existing images for {character['name']}:"
+                content = f"No new images added. Displaying existing images for {character['name']}:\n"
                 for element in character["images"]:
                     content += element
                     content += "\n"
