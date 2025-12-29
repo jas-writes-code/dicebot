@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import discord
+
 import wrangler
 from discord import *
 import re, json, random, time, uuid, shlex
@@ -15,7 +17,7 @@ gifs = ["https://tenor.com/btscP.gif", "https://tenor.com/bZ6Dc.gif", "https://t
 async def setInfo(message, args):
     global character
     character = None
-    blocked = ["owner", "creator", "created", "aliases"]
+    blocked = ["owner", "creator", "created", "aliases", "images"]
     async with message.channel.typing():
         with open("config.json", "r") as f:
             config = json.load(f)
@@ -47,6 +49,31 @@ async def setInfo(message, args):
         else:
             await message.reply("You're not allowed to edit other users' characters!")
 
+async def setImages(message, args):
+    global character
+    character = None
+    async with message.channel.typing():
+        with open("config.json", "r") as f:
+            config = json.load(f)
+        name = args[0]
+        character, uid = await wrangler.find(name)
+        if not character:
+            await message.reply(
+                f"*Error:* Character `{name}` not found.\n*Usage:* !image <name/alias/uuid>\n*Note:* Arguments with spaces must be written 'in quotes like this'.")
+            return
+        if message.author.id == int(character["owner"]) or message.author.id == client.user.id:
+            if len(args) == 2 and args[1] == "remove":
+                config['characters'][uid]['images'] = []
+                return
+            if len(message.attachments) == 0:
+                await message.reply(f"*Error:* No images found. Attach images to your message to include them in {character['name']}'s profile.")
+                return
+            for element in message.attachments:
+                config['characters'][uid]['images'].append(element.url)
+            with open("config.json", "w") as f:
+                json.dump(config, f, indent=4)
+            await message.reply(f"Added {len(message.attachments)} images to {character['name']}'s profile.")
+
 async def newCharacter(message, args):
     async with message.channel.typing():
         with open("config.json", "r") as f:
@@ -71,6 +98,7 @@ async def newCharacter(message, args):
               "dex": "unset",
               "con": "unset"
             },
+            "images": [],
             "created": int(time.time())
         }
         config["characters"][str(uid)] = payload
@@ -89,7 +117,7 @@ async def stats(message, args):
         character, uid = await wrangler.find(name)
         if not character:
             message.reply(
-                f"*Error:* Character `{name}` not found.\n*Usage:* !set <name/alias/uuid> <infopoint> <value>\n*Note:* Arguments with spaces must be written 'in quotes like this'.")
+                f"*Error:* Character `{name}` not found.\n*Usage:* !stats <name/alias/uuid>\n*Note:* Arguments with spaces must be written 'in quotes like this'.")
             return
         content = f"Saved roll stats for {character['name']}:\n"
         for element in character["stats"]:
@@ -122,6 +150,11 @@ async def about(message, args):
             sends = wrangler.thatstoolong(content)
             for element in sends:
                 await message.channel.send(element)
+        content = ""
+        for element in character["images"]:
+            content += element
+            content += "\n"
+        await message.channel.send(content)
 
 async def setAlias(message, args):
     global character
@@ -134,7 +167,7 @@ async def setAlias(message, args):
         character, uid = await wrangler.find(name)
         if not character:
             message.reply(
-                f"*Error:* Character `{name}` not found.\n*Usage:* !set <name/alias/uuid> <infopoint> <value>\n*Note:* Arguments with spaces must be written 'in quotes like this'.")
+                f"*Error:* Character `{name}` not found.\n*Usage:* !alias <name/alias/uuid> <alias> remove ( <-- optional)\n*Note:* Arguments with spaces must be written 'in quotes like this'.")
             return
         if message.author.id == int(character["owner"]):
             if len(args) == 3:
@@ -162,8 +195,7 @@ async def allInfo(message, args):
         name = args[0]
         character, uid = await wrangler.find(name)
         if not character:
-            message.reply(
-                f"*Error:* Character `{name}` not found.\n*Usage:* !set <name/alias/uuid> <infopoint> <value>\n*Note:* Arguments with spaces must be written 'in quotes like this'.")
+            message.reply(f"*Error:* Character `{name}` not found.\n*Usage:* !dump <name/alias/uuid>\n*Note:* Arguments with spaces must be written 'in quotes like this'.")
             return
         if message.author.id == int(character["owner"]) or message.author.id == client.user.id:
             await message.reply(f"```json\n{json.dumps(character, indent=4)}```")
@@ -181,18 +213,22 @@ async def changeOwner(message, args):
         character, uid = await wrangler.find(name)
         if not character:
             message.reply(
-                f"*Error:* Character `{name}` not found.\n*Usage:* !set <name/alias/uuid> <infopoint> <value>\n*Note:* Arguments with spaces must be written 'in quotes like this'.")
+                f"*Error:* Character `{name}` not found.\n*Usage:* !transfer <name/alias/uuid> <new owner id>\n*Note:* Arguments with spaces must be written 'in quotes like this'.")
+            return
+        newOwner = client.get_user(int(newID))
+        if type(newOwner) != discord.User:
+            await message.reply(f"*Error:* User with ID `{newID}` not found.\n*Usage:* !transfer <name/alias/uuid> <new owner id>\n*Note:* You must have Discord Developer Settings enabled to find User IDs..")
             return
         if message.author.id == int(character["owner"]) or message.author.id == client.user.id:
             if len(args) == 2:
-                newOwner = client.get_user(int(newID))
+
                 content = f"**Are you sure?**\n"
                 content += f"You are about to transfer ownership of your character {character['name']} to {newOwner.display_name}!\n"
                 content += f"This is potentially VERY destructive and can only be undone if {newOwner.display_name} transfers the character back to you.\n"
                 content += f"If you want to continue, type `!transfer {name} {newID} YES`"
                 await message.reply(content)
             if len(args) == 3:
-                newOwner = client.get_user(int(newID))
+
                 if args[2] == "YES":
                     config['characters'][uid]["owner"] = newID
                     with open("config.json", "w") as f:
@@ -216,12 +252,17 @@ async def listCharacters(message, args):
     with open("config.json", "r") as f:
         config = json.load(f)
     if len(args) == 0:
-        target = message.author.id
+        targetID = message.author.id
     else:
-        target = args[0]
-    target = client.get_user(int(target))
-    if target is None:
-        message.reply("*Error:* User not found.\n*Usage:* !list <optional User ID>\n*Note:* You must have Discord Developer Settings enabled to find User IDs.")
+        targetID = args[0]
+    try:
+        target = client.get_user(int(targetID))
+    except ValueError:
+        await message.reply(f"*Error:* User with ID {targetID} not found.\n*Usage:* !list <optional User ID>\n*Note:* You must have Discord Developer Settings enabled to find User IDs.")
+        return
+    if type(target) != discord.User:
+        message.reply(f"*Error:* User with ID {targetID} not found.\n*Usage:* !list <optional User ID>\n*Note:* You must have Discord Developer Settings enabled to find User IDs.")
+        return
     content = f"**Characters owned by {target.display_name}:**\n\n"
     count = 0
     for element in config["characters"]:
@@ -232,7 +273,12 @@ async def listCharacters(message, args):
             content += f"A Level {item['level']} {item['species']} {item['class']}\n"
             content += f"`{item['uuid']}`\n\n"
     content += f"*{target.display_name} has {count} saved character(s).*"
-    await message.reply(content)
+    try:
+        await message.reply(content)
+    except HTTPException:
+        sends = wrangler.thatstoolong(content)
+        for element in sends:
+            await message.channel.send(element)
 
 @client.event
 async def on_ready():

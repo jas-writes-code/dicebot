@@ -18,6 +18,14 @@
             "safety": true,
             "info": "Adds or updates stats or information about your character."
         },
+        "image": {
+            "command": "setImages",
+            "args": [
+                "name"
+            ],
+            "safety": true,
+            "info": "Attach an image to your message to add it to your character profile."
+        },
         "new": {
             "command": "newCharacter",
             "args": [
@@ -97,6 +105,7 @@
                 "dex": 8,
                 "con": 4
             },
+            "images": [],
             "created": -999999999999
         }
     }
