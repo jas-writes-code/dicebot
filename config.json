@@ -1,0 +1,103 @@
+{
+    "commands": {
+        "list": {
+            "command": "listCharacters",
+            "args": [
+                "user"
+            ],
+            "safety": false,
+            "info": "Lists characters owned by you or another user."
+        },
+        "set": {
+            "command": "setInfo",
+            "args": [
+                "name",
+                "stat",
+                "value"
+            ],
+            "safety": true,
+            "info": "Adds or updates stats or information about your character."
+        },
+        "new": {
+            "command": "newCharacter",
+            "args": [
+                "name"
+            ],
+            "safety": false,
+            "info": "Creates a blank character with name 'name'."
+        },
+        "stats": {
+            "command": "stats",
+            "args": [
+                "name"
+            ],
+            "safety": false,
+            "info": "Reads the core stats for a given character."
+        },
+        "about": {
+            "command": "about",
+            "args": [
+                "name"
+            ],
+            "safety": false,
+            "info": "Reads the information and backstory for a given character."
+        },
+        "alias": {
+            "command": "setAlias",
+            "args": [
+                "name",
+                "alias"
+            ],
+            "safety": true,
+            "info": "Sets aliases for your character."
+        },
+        "dump": {
+            "command": "allInfo",
+            "args": [
+                "name"
+            ],
+            "safety": true,
+            "info": "Dumps all raw data relating to your character."
+        },
+        "transfer": {
+            "command": "changeOwner",
+            "args": [
+                "name",
+                "newOwnerID"
+            ],
+            "safety": true,
+            "info": "Transfers ownership of a character to a new user."
+        },
+        "help": {
+            "command": "listCommands",
+            "args": [],
+            "safety": false,
+            "info": "Should be pretty self-explanatory."
+        }
+    },
+    "characters": {
+        "UUID GOES HERE": {
+            "uuid": "UUID GOES HERE",
+            "name": "DAVE, RETURNED FROM THE GRAVE, RETURED FROM THE GRAVE, RETURNED FROM THE GRAVE",
+            "level": "100",
+            "owner": "0",
+            "creator": 445205502834507776,
+            "aliases": [
+                "dd",
+                "dave"
+            ],
+            "species": "God?",
+            "class": "SUPERHUMAN",
+            "hist": "Dave's Backstory! Does he even have a backstory? Nobody knows!",
+            "stats": {
+                "int": 1,
+                "str": 9,
+                "wis": "6",
+                "cha": "7",
+                "dex": 8,
+                "con": 4
+            },
+            "created": -999999999999
+        }
+    }
+}
