@@ -10,6 +10,8 @@ key = token["key"]
 with open("config.json", "r") as f:
     config = json.load(f)
 
+gifs = ["https://tenor.com/btscP.gif", "https://tenor.com/bZ6Dc.gif", "https://tenor.com/bNnGN.gif", "https://tenor.com/bt0Bu.gif", "https://tenor.com/hGCEQSyoiSD.gif", "https://tenor.com/e2krWN7CFON.gif"]
+
 async def setInfo(message, args):
     global character
     character = None
@@ -246,13 +248,19 @@ async def on_message(message):
     content = message.content
     match = re.match(pattern, content)
     if match:
-        size = int(match.group(2))
-        if size == 1:
+        count_str = match.group(1)
+        size_str = match.group(2)
+        count = int(count_str) if count_str not in ("", "-") else 1
+        size = int(size_str)
+        if size < 1 or count < 1:
+            gif = random.randint(0, len(gifs) - 1)
+            await message.channel.send(gifs[gif])
+            return
+        elif size == 1:
             await message.channel.send("You rolled a 1. What did you expect?")
             return
-        if match.group(1) and int(match.group(1)) > 1:
-            rounds = int(match.group(1))
-            await multiDice(size, rounds, message)
+        elif count > 1:
+            await multiDice(size, count, message)
         else:
             await singleDice(size, message)
     else:
